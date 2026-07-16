@@ -18,6 +18,7 @@ const PORT = process.env.PORT || 5000;
 // Security Middlewares
 app.use(helmet({
   crossOriginResourcePolicy: false, // Allow frontend to fetch dynamically generated S3 URLs
+  contentSecurityPolicy: false,     // Disable standard CSP to allow Tailwind CDN and scripts
 }));
 app.use(cors());
 
@@ -27,6 +28,9 @@ app.use(morgan('dev'));
 // Parsing Request Bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve Frontend static directory
+app.use(express.static(path.join(__dirname, "../frontend")));
 
 // Serve Uploaded Files via S3 Pre-signed URL Redirects
 app.get('/uploads/:filename', async (req, res, next) => {
@@ -65,12 +69,9 @@ app.get('/uploads/:filename', async (req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/certificates', certificateRoutes);
 
-// Root Endpoint
-app.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Welcome to the Certificate Vault API (AWS Cloud-Native Mode)'
-  });
+// Send index.html on root request
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/index.html"));
 });
 
 // Centralized Error Handling Middleware
