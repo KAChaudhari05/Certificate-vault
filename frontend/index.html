@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Certificate Vault - Secure Digital Certificate Manager</title>
+  
+  <!-- Inter & Outfit Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Custom Styling & Micro-animations -->
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    h1, h2, h3, .font-heading {
+      font-family: 'Outfit', sans-serif;
+    }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-input {
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.2s ease-in-out;
+    }
+    .glass-input:focus {
+      background: rgba(30, 41, 59, 0.7);
+      border-color: rgb(139, 92, 246);
+      box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+      outline: none;
+    }
+    .glow-purple {
+      box-shadow: 0 0 40px -10px rgba(139, 92, 246, 0.3);
+    }
+    .transition-view {
+      transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+    }
+    .view-hidden {
+      display: none !important;
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    .view-active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .no-scrollbar {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
+  </style>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+              900: '#4c1d95',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="h-full flex flex-col no-scrollbar">
+
+  <!-- Background decorative glows -->
+  <div class="fixed top-0 left-1/4 w-96 h-96 bg-violet-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+  <div class="fixed bottom-0 right-1/4 w-[400px] h-[400px] bg-blue-600/10 rounded-full blur-[150px] pointer-events-none"></div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3"></div>
+
+  <!-- ==================== AUTH LAYOUT ==================== -->
+  <div id="auth-layout" class="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-view">
+    
+    <!-- LOGIN VIEW -->
+    <div id="view-login" class="max-w-md w-full space-y-8 glass-card rounded-2xl p-8 shadow-2xl border border-slate-800">
+      <div class="text-center">
+        <div class="mx-auto h-12 w-12 rounded-xl bg-violet-600 flex items-center justify-center glow-purple">
+          <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <h2 class="mt-6 text-3xl font-extrabold text-white">Sign in to Vault</h2>
+        <p class="mt-2 text-sm text-slate-400">Secure digital certificate manager</p>
+      </div>
+      
+      <form class="mt-8 space-y-6" onsubmit="handleLogin(event)">
+        <div class="space-y-4 rounded-md">
+          <div>
+            <label for="login-email" class="block text-sm font-medium text-slate-300 mb-1">Email Address</label>
+            <input id="login-email" name="email" type="email" required class="glass-input text-white rounded-lg block w-full px-3 py-2.5 sm:text-sm" placeholder="you@example.com">
+          </div>
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label for="login-password" class="block text-sm font-medium text-slate-300">Password</label>
+              <a href="#" onclick="showToast('Forgot password functionality is UI-only', 'info')" class="text-xs text-brand-500 hover:text-brand-400">Forgot password?</a>
+            </div>
+            <input id="login-password" name="password" type="password" required class="glass-input text-white rounded-lg block w-full px-3 py-2.5 sm:text-sm" placeholder="••••••••">
+          </div>
+        </div>
+
+        <button type="submit" class="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-violet-600 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 transition-colors shadow-lg shadow-violet-900/20">
+          Sign In
+        </button>
+        
+        <p class="text-center text-sm text-slate-400">
+          Don't have an account? 
+          <a href="#" onclick="switchView('register')" class="font-medium text-brand-500 hover:text-brand-400">Sign up</a>
+        </p>
+      </form>
+    </div>
+
+    <!-- REGISTER VIEW -->
+    <div id="view-register" class="max-w-md w-full space-y-8 glass-card rounded-2xl p-8 shadow-2xl border border-slate-800 view-hidden">
+      <div class="text-center">
+        <div class="mx-auto h-12 w-12 rounded-xl bg-violet-600 flex items-center justify-center glow-purple">
+          <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+          </svg>
+        </div>
+        <h2 class="mt-6 text-3xl font-extrabold text-white">Create an account</h2>
+        <p class="mt-2 text-sm text-slate-400">Get started with your secure vault</p>
+      </div>
+      
+      <form class="mt-8 space-y-5" onsubmit="handleRegister(event)">
+        <div class="space-y-4">
+          <div>
+            <label for="reg-name" class="block text-sm font-medium text-slate-300 mb-1">Full Name</label>
+            <input id="reg-name" name="name" type="text" required class="glass-input text-white rounded-lg block w-full px-3 py-2.5 sm:text-sm" placeholder="John Doe">
+          </div>
+          <div>
+            <label for="reg-email" class="block text-sm font-medium text-slate-300 mb-1">Email Address</label>
+            <input id="reg-email" name="email" type="email" required class="glass-input text-white rounded-lg block w-full px-3 py-2.5 sm:text-sm" placeholder="john@example.com">
+          </div>
+          <div>
+            <label for="reg-password" class="block text-sm font-medium text-slate-300 mb-1">Password</label>
+            <input id="reg-password" name="password" type="password" required class="glass-input text-white rounded-lg block w-full px-3 py-2.5 sm:text-sm" placeholder="•••••••• (Min 6 chars)">
+          </div>
+          <div>
+            <label for="reg-confirm-password" class="block text-sm font-medium text-slate-300 mb-1">Confirm Password</label>
+            <input id="reg-confirm-password" name="confirmPassword" type="password" required class="glass-input text-white rounded-lg block w-full px-3 py-2.5 sm:text-sm" placeholder="••••••••">
+          </div>
+        </div>
+
+        <button type="submit" class="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-violet-600 hover:bg-violet-700 focus:outline-none  transition-colors shadow-lg shadow-violet-900/20">
+          Create Account
+        </button>
+        
+        <p class="text-center text-sm text-slate-400">
+          Already registered? 
+          <a href="#" onclick="switchView('login')" class="font-medium text-brand-500 hover:text-brand-400">Sign in</a>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== APP LAYOUT (DASHBOARD & DETAILS) ==================== -->
+  <div id="app-layout" class="flex-1 flex overflow-hidden view-hidden">
+    
+    <!-- SIDEBAR -->
+    <aside class="w-64 border-r border-slate-800 bg-slate-900/50 flex flex-col z-20">
+      <div class="h-16 flex items-center px-6 border-b border-slate-800">
+        <div class="h-8 w-8 rounded-lg bg-violet-600 flex items-center justify-center mr-3">
+          <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <span class="text-lg font-bold font-heading bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Vault</span>
+      </div>
+
+      <!-- Navigation links -->
+      <nav class="flex-1 px-4 py-6 space-y-1.5">
+        <a href="#" onclick="switchView('dashboard')" id="nav-dashboard" class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-white bg-violet-600/10 border-l-4 border-violet-500 transition-all">
+          <svg class="mr-3 h-5 w-5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
+          </svg>
+          Dashboard
+        </a>
+        <a href="#" onclick="switchView('list')" id="nav-list" class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800/50 hover:text-white transition-all">
+          <svg class="mr-3 h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+          </svg>
+          Certificates
+        </a>
+        <a href="#" onclick="switchView('upload')" id="nav-upload" class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800/50 hover:text-white transition-all">
+          <svg class="mr-3 h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          Upload Certificate
+        </a>
+        <a href="#" onclick="switchView('profile')" id="nav-profile" class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800/50 hover:text-white transition-all">
+          <svg class="mr-3 h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          Profile settings
+        </a>
+      </nav>
+
+      <!-- Sidebar footer user info -->
+      <div class="p-4 border-t border-slate-800 bg-slate-900/30 flex items-center">
+        <div class="h-9 w-9 rounded-full bg-violet-600/30 border border-violet-500/50 flex items-center justify-center text-violet-300 font-bold" id="sidebar-user-avatar">
+          U
+        </div>
+        <div class="ml-3 overflow-hidden">
+          <p class="text-xs font-semibold text-white truncate" id="sidebar-user-name">User Name</p>
+          <p class="text-[10px] text-slate-400 truncate" id="sidebar-user-email">user@email.com</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN APP WRAPPER -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      
+      <!-- NAVBAR -->
+      <header class="h-16 border-b border-slate-800 bg-slate-950/80 backdrop-blur-md flex items-center justify-between px-8 z-10">
+        <h2 class="text-xl font-semibold text-white" id="current-view-title">Dashboard</h2>
+        <div class="flex items-center space-x-4">
+          <button onclick="handleLogout()" class="flex items-center text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 rounded-lg border border-rose-500/20 transition-all">
+            <svg class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Logout
+          </button>
+        </div>
+      </header>
+
+      <!-- CONTENT BODY -->
+      <main class="flex-1 overflow-y-auto p-8 space-y-8 no-scrollbar bg-slate-950/90">
+        
+        <!-- ==================== DASHBOARD VIEW ==================== -->
+        <section id="view-dashboard" class="space-y-8 transition-view">
+          
+          <!-- Statistics Cards Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="glass-card rounded-2xl p-6 relative overflow-hidden shadow-xl">
+              <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-violet-600/10 rounded-full blur-2xl"></div>
+              <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Certificates</p>
+              <h3 class="text-4xl font-extrabold text-white mt-2" id="stat-total">0</h3>
+              <div class="flex items-center mt-3 text-xs text-violet-400">
+                <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Securely vaulted
+              </div>
+            </div>
+            
+            <div class="glass-card rounded-2xl p-6 relative overflow-hidden shadow-xl">
+              <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-emerald-600/10 rounded-full blur-2xl"></div>
+              <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Storage Used</p>
+              <h3 class="text-4xl font-extrabold text-white mt-2" id="stat-storage">0 KB</h3>
+              <div class="flex items-center mt-3 text-xs text-emerald-400">
+                <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                Local temporary uploads
+              </div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 relative overflow-hidden shadow-xl">
+              <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-blue-600/10 rounded-full blur-2xl"></div>
+              <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Categories</p>
+              <h3 class="text-4xl font-extrabold text-white mt-2" id="stat-categories">0</h3>
+              <div class="flex items-center mt-3 text-xs text-blue-400">
+                <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Unique tags
+              </div>
+            </div>
+          </div>
+
+          <!-- Mid section: Recent uploads & Latest activity log -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Recent Uploads Panel -->
+            <div class="glass-card rounded-2xl p-6 space-y-4">
+              <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white">Recent Uploads</h3>
+                <button onclick="switchView('list')" class="text-xs font-medium text-brand-500 hover:text-brand-400">View All →</button>
+              </div>
+              <div class="divide-y divide-slate-800" id="recent-uploads-list">
+                <!-- Rendered dynamically -->
+                <p class="text-sm text-slate-400 py-4 text-center">No certificates uploaded yet.</p>
+              </div>
+            </div>
+
+            <!-- Latest Activity Log Panel -->
+            <div class="glass-card rounded-2xl p-6 space-y-4">
+              <h3 class="text-lg font-bold text-white">Latest Activity</h3>
+              <div class="space-y-4" id="activity-log-list">
+                <div class="flex items-start">
+                  <span class="flex h-6 w-6 items-center justify-center rounded-full bg-slate-800 text-[10px] text-slate-300 mr-3 mt-0.5">ℹ</span>
+                  <div>
+                    <p class="text-xs text-slate-300">Vault created successfully</p>
+                    <p class="text-[10px] text-slate-500">System initialized</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ==================== UPLOAD VIEW ==================== -->
+        <section id="view-upload" class="max-w-3xl mx-auto space-y-8 transition-view view-hidden">
+          <div class="glass-card rounded-2xl p-8 space-y-6">
+            <div>
+              <h3 class="text-xl font-bold text-white">Upload Certificate</h3>
+              <p class="text-sm text-slate-400 mt-1">Add a digital certificate metadata file and configure parameters.</p>
+            </div>
+            
+            <form onsubmit="handleUpload(event)" id="upload-form" class="space-y-6">
+              <!-- Drag and Drop Area -->
+              <div>
+                <label class="block text-sm font-medium text-slate-300 mb-2">Certificate File</label>
+                <div id="drag-drop-zone" class="border-2 border-dashed border-slate-700 hover:border-brand-500/80 rounded-xl p-8 text-center bg-slate-900/20 cursor-pointer transition-colors"
+                     ondragover="handleDragOver(event)"
+                     ondragleave="handleDragLeave(event)"
+                     ondrop="handleDrop(event)"
+                     onclick="triggerFileInput()">
+                  
+                  <input type="file" id="upload-file" name="file" class="hidden" accept="application/pdf,image/*" onchange="handleFileSelect(event)">
+                  
+                  <div class="space-y-2 text-center" id="upload-prompt">
+                    <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <p class="text-sm font-medium text-slate-300">Drag and drop file here, or <span class="text-brand-500">browse</span></p>
+                    <p class="text-xs text-slate-500">PDF, PNG, JPG, JPEG or GIF (Max 5MB)</p>
+                  </div>
+                  
+                  <!-- Preview Box -->
+                  <div id="upload-preview" class="hidden flex items-center justify-between p-3 bg-violet-950/20 border border-violet-500/30 rounded-lg">
+                    <div class="flex items-center space-x-3 overflow-hidden text-left">
+                      <div class="h-10 w-10 bg-brand-500/20 border border-brand-500/40 rounded flex items-center justify-center text-brand-400 text-xs font-bold" id="preview-icon">
+                        DOC
+                      </div>
+                      <div class="overflow-hidden">
+                        <p class="text-xs font-semibold text-slate-200 truncate" id="preview-filename">certificate.pdf</p>
+                        <p class="text-[10px] text-slate-400" id="preview-filesize">2.4 MB</p>
+                      </div>
+                    </div>
+                    <button type="button" onclick="clearSelectedFile(event)" class="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 rounded bg-rose-500/10 border border-rose-500/20">Remove</button>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Meta fields -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label for="cert-name" class="block text-sm font-medium text-slate-300 mb-1">Certificate Name *</label>
+                  <input type="text" id="cert-name" required class="glass-input text-white rounded-lg block w-full px-3 py-2 text-sm" placeholder="AWS Certified Solutions Architect">
+                </div>
+                <div>
+                  <label for="cert-org" class="block text-sm font-medium text-slate-300 mb-1">Issuing Organization *</label>
+                  <input type="text" id="cert-org" required class="glass-input text-white rounded-lg block w-full px-3 py-2 text-sm" placeholder="Amazon Web Services">
+                </div>
+                <div>
+                  <label for="cert-category" class="block text-sm font-medium text-slate-300 mb-1">Category *</label>
+                  <input type="text" id="cert-category" required class="glass-input text-white rounded-lg block w-full px-3 py-2 text-sm" placeholder="Cloud / Security / College">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label for="cert-issue" class="block text-sm font-medium text-slate-300 mb-1">Issue Date *</label>
+                    <input type="date" id="cert-issue" required class="glass-input text-white rounded-lg block w-full px-3 py-2 text-sm">
+                  </div>
+                  <div>
+                    <label for="cert-expiry" class="block text-sm font-medium text-slate-300 mb-1">Expiry Date (Optional)</label>
+                    <input type="date" id="cert-expiry" class="glass-input text-white rounded-lg block w-full px-3 py-2 text-sm">
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <label for="cert-desc" class="block text-sm font-medium text-slate-300 mb-1">Description (Optional)</label>
+                <textarea id="cert-desc" rows="3" class="glass-input text-white rounded-lg block w-full px-3 py-2 text-sm" placeholder="Brief details about the certificate, scope, validation code, or credentials..."></textarea>
+              </div>
+
+              <div class="flex justify-end space-x-3">
+                <button type="button" onclick="switchView('dashboard')" class="px-4 py-2 border border-slate-700 text-sm font-medium rounded-lg text-slate-400 hover:text-white transition-colors">Cancel</button>
+                <button type="submit" class="px-5 py-2 text-sm font-medium rounded-lg text-white bg-violet-600 hover:bg-violet-700 shadow-md shadow-violet-900/30 transition-colors flex items-center">
+                  <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white hidden" id="upload-loading-spinner" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Upload and Register</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- ==================== CERTIFICATES LIST TABLE VIEW ==================== -->
+        <section id="view-list" class="space-y-6 transition-view view-hidden">
+          
+          <!-- Filters & search panel -->
+          <div class="glass-card rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="relative flex-1 max-w-md">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </span>
+              <input type="text" id="search-input" oninput="debounceSearch()" class="glass-input text-white rounded-lg block w-full pl-9 pr-3 py-2 text-sm" placeholder="Search by name, organization...">
+            </div>
+            
+            <div class="flex flex-wrap gap-3">
+              <div>
+                <select id="filter-category" onchange="fetchCertificates()" class="glass-input text-white rounded-lg block px-3 py-2 text-sm bg-slate-900">
+                  <option value="">All Categories</option>
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+              <div>
+                <select id="sort-by" onchange="fetchCertificates()" class="glass-input text-white rounded-lg block px-3 py-2 text-sm bg-slate-900">
+                  <option value="createdAt">Date Created</option>
+                  <option value="name">Name</option>
+                  <option value="organization">Organization</option>
+                  <option value="issueDate">Issue Date</option>
+                  <option value="expiryDate">Expiry Date</option>
+                </select>
+              </div>
+              <div>
+                <select id="sort-order" onchange="fetchCertificates()" class="glass-input text-white rounded-lg block px-3 py-2 text-sm bg-slate-900">
+                  <option value="desc">Descending</option>
+                  <option value="asc">Ascending</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Certificates Table -->
+          <div class="glass-card rounded-2xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="border-b border-slate-800 bg-slate-900/40 text-slate-400 font-medium">
+                    <th class="p-4 pl-6">Certificate Name</th>
+                    <th class="p-4">Organization</th>
+                    <th class="p-4">Category</th>
+                    <th class="p-4">Issue Date</th>
+                    <th class="p-4">Expiry Date</th>
+                    <th class="p-4 text-right pr-6">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="certificates-table-body" class="divide-y divide-slate-800">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Table empty state fallback -->
+            <div id="table-empty-state" class="hidden text-center py-12 space-y-3">
+              <svg class="mx-auto h-12 w-12 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              <h4 class="text-sm font-semibold text-slate-300">No certificates matching query</h4>
+              <p class="text-xs text-slate-500">Try modifying filter properties or adding a new file.</p>
+            </div>
+
+            <!-- Pagination Toolbar -->
+            <div class="border-t border-slate-800 px-6 py-4 flex items-center justify-between text-xs text-slate-400 bg-slate-900/20">
+              <div id="pagination-status">Showing 0 of 0 certificates</div>
+              <div class="flex items-center space-x-2">
+                <button onclick="changePage(-1)" id="btn-prev-page" class="px-3 py-1.5 border border-slate-800 bg-slate-900/40 rounded hover:text-white disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
+                <span id="pagination-pages" class="font-medium text-slate-300">Page 1 of 1</span>
+                <button onclick="changePage(1)" id="btn-next-page" class="px-3 py-1.5 border border-slate-800 bg-slate-900/40 rounded hover:text-white disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== PROFILE VIEW ==================== -->
+        <section id="view-profile" class="max-w-2xl mx-auto space-y-8 transition-view view-hidden">
+          
+          <!-- Profile Card -->
+          <div class="glass-card rounded-2xl p-8 space-y-6">
+            <h3 class="text-xl font-bold text-white">Profile Details</h3>
+            
+            <form onsubmit="handleUpdateProfile(event)" class="space-y-6">
+              <div class="flex items-center space-x-6 pb-4 border-b border-slate-800">
+                <div class="h-20 w-20 rounded-full bg-violet-600/20 border-2 border-violet-500 flex items-center justify-center text-3xl font-bold text-violet-300" id="profile-avatar">
+                  U
+                </div>
+                <div>
+                  <h4 class="text-base font-semibold text-white" id="profile-name-header">User Name</h4>
+                  <p class="text-xs text-slate-400 mt-0.5">Account Owner</p>
+                  <p class="text-[10px] text-slate-500 mt-1" id="profile-created-date">Created on: July 17, 2026</p>
+                </div>
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label for="prof-name" class="block text-sm font-medium text-slate-300 mb-1">Full Name</label>
+                  <input type="text" id="prof-name" required class="glass-input text-white rounded-lg block w-full px-3 py-2 text-sm" placeholder="John Doe">
+                </div>
+                <div>
+                  <label for="prof-email" class="block text-sm font-medium text-slate-300 mb-1">Email Address</label>
+                  <input type="email" id="prof-email" required class="glass-input text-white rounded-lg block w-full px-3 py-2 text-sm" placeholder="john@example.com">
+                </div>
+              </div>
+
+              <!-- Change Password block -->
+              <div class="space-y-4 pt-4 border-t border-slate-800">
+                <h4 class="text-sm font-semibold text-white">Update Password</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label for="prof-current-pass" class="block text-sm font-medium text-slate-300 mb-1">Current Password (needed to change)</label>
+                    <input type="password" id="prof-current-pass" class="glass-input text-white rounded-lg block w-full px-3 py-2 text-sm" placeholder="••••••••">
+                  </div>
+                  <div>
+                    <label for="prof-new-pass" class="block text-sm font-medium text-slate-300 mb-1">New Password</label>
+                    <input type="password" id="prof-new-pass" class="glass-input text-white rounded-lg block w-full px-3 py-2 text-sm" placeholder="•••••••• (Min 6 chars)">
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex justify-end">
+                <button type="submit" class="px-5 py-2 text-sm font-medium rounded-lg text-white bg-violet-600 hover:bg-violet-700 shadow-md shadow-violet-900/30 transition-colors">
+                  Save Profile Settings
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- FOOTER -->
+      <footer class="h-10 border-t border-slate-900 bg-slate-950 px-8 flex items-center justify-between text-[11px] text-slate-500">
+        <span>© 2026 Certificate Vault. All rights reserved.</span>
+        <div class="flex space-x-4">
+          <a href="#" class="hover:text-slate-400">Privacy Policy</a>
+          <a href="#" class="hover:text-slate-400">Terms of Service</a>
+          <span>Stateless REST API Mode</span>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+  
+  <!-- Certificate Details Modal -->
+  <div id="details-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm hidden">
+    <div class="glass-card w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl border border-slate-800 flex flex-col md:flex-row h-[500px]">
+      
+      <!-- Preview / Thumbnail Section -->
+      <div class="w-full md:w-1/2 bg-slate-900/60 flex flex-col items-center justify-center p-6 border-b md:border-b-0 md:border-r border-slate-800">
+        <div class="w-full h-full flex flex-col items-center justify-center text-center space-y-4">
+          <div class="h-16 w-16 bg-violet-500/10 border border-violet-500/20 text-violet-400 rounded-xl flex items-center justify-center" id="modal-preview-icon">
+            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-300" id="modal-filename">certificate_file.pdf</p>
+            <p class="text-[10px] text-slate-500 mt-0.5" id="modal-filesize">2.4 MB</p>
+          </div>
+          
+          <div class="flex flex-col space-y-2 w-full pt-4">
+            <a href="#" id="modal-btn-download" download class="w-full flex justify-center items-center py-2 px-4 border border-slate-700 rounded-lg text-sm text-slate-200 hover:text-white bg-slate-800/40 hover:bg-slate-800/80 transition-all">
+              <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Download
+            </a>
+            <a href="#" id="modal-btn-view" target="_blank" class="w-full flex justify-center items-center py-2 px-4 border border-violet-600/30 rounded-lg text-sm text-white bg-violet-600 hover:bg-violet-700 transition-all">
+              <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              View Document
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info panel -->
+      <div class="w-full md:w-1/2 p-6 flex flex-col justify-between overflow-y-auto no-scrollbar">
+        <div class="space-y-4">
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="inline-flex px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase bg-brand-500/10 border border-brand-500/20 text-violet-400 rounded-md" id="modal-category">Cloud</span>
+              <h3 class="text-lg font-bold text-white mt-1.5" id="modal-name">AWS Solutions Architect</h3>
+            </div>
+            <button onclick="closeDetailsModal()" class="text-slate-500 hover:text-slate-400">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="space-y-3 pt-2">
+            <div>
+              <p class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Issuing Organization</p>
+              <p class="text-sm text-slate-300 font-medium" id="modal-organization">Amazon Web Services</p>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <p class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Issue Date</p>
+                <p class="text-xs text-slate-300 font-medium" id="modal-issue-date">2026-07-17</p>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Expiry Date</p>
+                <p class="text-xs text-slate-300 font-medium" id="modal-expiry-date">No Expiry</p>
+              </div>
+            </div>
+            
+            <div>
+              <p class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Description</p>
+              <p class="text-xs text-slate-400 mt-1 leading-relaxed bg-slate-900/40 p-2.5 rounded-lg border border-slate-900" id="modal-description">No description provided.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-800/80 flex space-x-2">
+          <button id="modal-btn-delete" class="flex-1 py-2 text-xs font-semibold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-lg transition-all">
+            Delete Permanently
+          </button>
+          <button onclick="closeDetailsModal()" class="flex-1 py-2 text-xs font-semibold text-slate-400 bg-slate-800 hover:text-white rounded-lg transition-all">
+            Close
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== FRONTEND CONTROLLER JAVASCRIPT ==================== -->
+  <script>
+    // Configuration
+    const API_BASE_URL = 'http://localhost:5000/api';
+    const STATIC_BASE_URL = 'http://localhost:5000';
+    
+    // Application State
+    let state = {
+      token: localStorage.getItem('jwt_token') || null,
+      user: JSON.parse(localStorage.getItem('user_details')) || null,
+      currentView: 'login',
+      certificates: [],
+      categories: [],
+      pagination: {
+        total: 0,
+        page: 1,
+        limit: 8,
+        totalPages: 1
+      },
+      searchQuery: '',
+      selectedCategory: '',
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+      selectedFile: null
+    };
+
+    // Activity Log Array (local simulation logger)
+    let activityLog = [
+      { message: "Vault interface launched", detail: "Ready for operations", time: new Date().toLocaleTimeString() }
+    ];
+
+    // ==================== INITIALIZATION ====================
+    window.addEventListener('DOMContentLoaded', () => {
+      // Setup Initial State
+      if (state.token && state.user) {
+        switchView('dashboard');
+        updateSidebarUserInfo();
+      } else {
+        switchView('login');
+      }
+      
+      // Setup file drag and drop highlight listener
+      const dragDropZone = document.getElementById('drag-drop-zone');
+    });
+
+    // Add activity logger helper
+    function logActivity(message, detail = "Success") {
+      activityLog.unshift({
+        message,
+        detail,
+        time: new Date().toLocaleTimeString()
+      });
+      if (activityLog.length > 8) activityLog.pop();
+      renderActivityLog();
+    }
+
+    function renderActivityLog() {
+      const listEl = document.getElementById('activity-log-list');
+      if (!listEl) return;
+      
+      listEl.innerHTML = activityLog.map(log => `
+        <div class="flex items-start">
+          <span class="flex h-5 w-5 items-center justify-center rounded-full bg-violet-600/20 text-[10px] text-violet-400 mr-3 mt-0.5 font-bold">✓</span>
+          <div>
+            <p class="text-xs text-slate-300 font-medium">${log.message}</p>
+            <p class="text-[10px] text-slate-500">${log.detail} • ${log.time}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ==================== VIEW ROUTING ====================
+    function switchView(viewName) {
+      // Hide layouts/sections
+      const authLayout = document.getElementById('auth-layout');
+      const appLayout = document.getElementById('app-layout');
+      
+      const views = ['login', 'register', 'dashboard', 'upload', 'list', 'profile'];
+      
+      views.forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        if (el) {
+          el.classList.remove('view-active');
+          el.classList.add('view-hidden');
+        }
+        
+        // Remove active class from navbar/sidebar buttons
+        const navBtn = document.getElementById(`nav-${v}`);
+        if (navBtn) {
+          navBtn.className = "flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800/50 hover:text-white transition-all";
+        }
+      });
+
+      state.currentView = viewName;
+
+      // Layout toggle
+      if (viewName === 'login' || viewName === 'register') {
+        authLayout.classList.remove('view-hidden');
+        authLayout.classList.add('view-active');
+        appLayout.classList.add('view-hidden');
+        appLayout.classList.remove('view-active');
+        
+        const el = document.getElementById(`view-${viewName}`);
+        el.classList.remove('view-hidden');
+        el.classList.add('view-active');
+      } else {
+        // Must be authenticated
+        if (!state.token) {
+          switchView('login');
+          return;
+        }
+
+        authLayout.classList.add('view-hidden');
+        authLayout.classList.remove('view-active');
+        appLayout.classList.remove('view-hidden');
+        appLayout.classList.add('view-active');
+
+        const el = document.getElementById(`view-${viewName}`);
+        el.classList.remove('view-hidden');
+        el.classList.add('view-active');
+
+        // Sidebar active styling
+        const navBtn = document.getElementById(`nav-${viewName}`);
+        if (navBtn) {
+          navBtn.className = "flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-white bg-violet-600/10 border-l-4 border-violet-500 transition-all";
+        }
+
+        // Set View Header
+        const titleMap = {
+          dashboard: 'Vault Dashboard',
+          upload: 'Secure Certificate Upload',
+          list: 'Managed Certificates',
+          profile: 'Settings & Profile'
+        };
+        document.getElementById('current-view-title').innerText = titleMap[viewName] || 'Vault';
+
+        // Load data specific to each view
+        if (viewName === 'dashboard') {
+          fetchDashboardStats();
+        } else if (viewName === 'list') {
+          fetchCertificates();
+        } else if (viewName === 'profile') {
+          loadProfileData();
+        }
+      }
+    }
+
+    // ==================== AUTHENTICATION API ====================
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          state.token = result.data.token;
+          state.user = result.data.user;
+          localStorage.setItem('jwt_token', state.token);
+          localStorage.setItem('user_details', JSON.stringify(state.user));
+          
+          updateSidebarUserInfo();
+          showToast('Signed in successfully!', 'success');
+          logActivity('User signed in', email);
+          switchView('dashboard');
+        } else {
+          showToast(result.message || 'Authentication failed.', 'error');
+        }
+      } catch (err) {
+        showToast('Network error connecting to API', 'error');
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value;
+      const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-password').value;
+      const confirmPassword = document.getElementById('reg-confirm-password').value;
+
+      if (password !== confirmPassword) {
+        showToast('Passwords do not match.', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password, confirmPassword })
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          state.token = result.data.token;
+          state.user = result.data.user;
+          localStorage.setItem('jwt_token', state.token);
+          localStorage.setItem('user_details', JSON.stringify(state.user));
+          
+          updateSidebarUserInfo();
+          showToast('Account registered successfully!', 'success');
+          logActivity('New registration completed', email);
+          switchView('dashboard');
+        } else {
+          showToast(result.message || 'Registration failed.', 'error');
+        }
+      } catch (err) {
+        showToast('Network error connecting to API', 'error');
+      }
+    }
+
+    function handleLogout() {
+      state.token = null;
+      state.user = null;
+      localStorage.removeItem('jwt_token');
+      localStorage.removeItem('user_details');
+      showToast('Logged out successfully', 'info');
+      switchView('login');
+    }
+
+    function updateSidebarUserInfo() {
+      if (state.user) {
+        document.getElementById('sidebar-user-name').innerText = state.user.name;
+        document.getElementById('sidebar-user-email').innerText = state.user.email;
+        const initial = state.user.name ? state.user.name.charAt(0).toUpperCase() : 'U';
+        document.getElementById('sidebar-user-avatar').innerText = initial;
+      }
+    }
+
+    // ==================== DASHBOARD FLOW ====================
+    async function fetchDashboardStats() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/certificates?limit=4`, {
+          headers: { 'Authorization': `Bearer ${state.token}` }
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+          // Render stats
+          document.getElementById('stat-total').innerText = result.data.stats.totalCertificates;
+          document.getElementById('stat-categories').innerText = result.data.stats.uniqueCategories;
+          document.getElementById('stat-storage').innerText = formatBytes(result.data.stats.storageBytes);
+          
+          // Render recent uploads
+          const recentList = document.getElementById('recent-uploads-list');
+          if (result.data.certificates.length === 0) {
+            recentList.innerHTML = `<p class="text-xs text-slate-400 py-4 text-center">No certificates uploaded yet.</p>`;
+          } else {
+            recentList.innerHTML = result.data.certificates.map(cert => `
+              <div class="flex items-center justify-between py-3 cursor-pointer hover:bg-slate-800/20 px-2 rounded-lg transition-colors" onclick="openDetailsModal('${cert.id}')">
+                <div class="flex items-center space-x-3 overflow-hidden">
+                  <div class="h-8 w-8 bg-violet-600/15 border border-violet-500/30 rounded flex items-center justify-center text-violet-400 text-[10px] font-bold">
+                    ${cert.fileType.includes('pdf') ? 'PDF' : 'IMG'}
+                  </div>
+                  <div class="overflow-hidden">
+                    <p class="text-xs font-semibold text-slate-200 truncate">${cert.name}</p>
+                    <p class="text-[9px] text-slate-500 truncate">${cert.organization} • ${cert.category}</p>
+                  </div>
+                </div>
+                <div class="text-[10px] text-slate-400 font-medium">
+                  ${formatDateString(cert.issueDate)}
+                </div>
+              </div>
+            `).join('');
+          }
+          renderActivityLog();
+        }
+      } catch (err) {
+        showToast('Error retrieving dashboard details', 'error');
+      }
+    }
+
+    // ==================== PROFILE CONTROL ====================
+    function loadProfileData() {
+      if (state.user) {
+        document.getElementById('profile-name-header').innerText = state.user.name;
+        document.getElementById('profile-avatar').innerText = state.user.name.charAt(0).toUpperCase();
+        
+        document.getElementById('prof-name').value = state.user.name;
+        document.getElementById('prof-email').value = state.user.email;
+        
+        // Reset passwords
+        document.getElementById('prof-current-pass').value = '';
+        document.getElementById('prof-new-pass').value = '';
+
+        if (state.user.createdAt) {
+          const date = new Date(state.user.createdAt);
+          document.getElementById('profile-created-date').innerText = `Created on: ${date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}`;
+        }
+      }
+    }
+
+    async function handleUpdateProfile(e) {
+      e.preventDefault();
+      const name = document.getElementById('prof-name').value;
+      const email = document.getElementById('prof-email').value;
+      const currentPassword = document.getElementById('prof-current-pass').value;
+      const newPassword = document.getElementById('prof-new-pass').value;
+
+      const bodyData = { name, email };
+      if (newPassword) {
+        if (!currentPassword) {
+          showToast('Current password is required to update password', 'error');
+          return;
+        }
+        bodyData.currentPassword = currentPassword;
+        bodyData.newPassword = newPassword;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${state.token}`
+          },
+          body: JSON.stringify(bodyData)
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          state.user = result.data.user;
+          localStorage.setItem('user_details', JSON.stringify(state.user));
+          updateSidebarUserInfo();
+          loadProfileData();
+          showToast('Profile updated successfully!', 'success');
+          logActivity('Profile configuration updated', state.user.email);
+        } else {
+          showToast(result.message || 'Failed to update profile.', 'error');
+        }
+      } catch (err) {
+        showToast('Error connecting to Server API', 'error');
+      }
+    }
+
+    // ==================== CERTIFICATES LIST CONTROL ====================
+    let searchTimeout;
+    function debounceSearch() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        state.searchQuery = document.getElementById('search-input').value;
+        state.pagination.page = 1;
+        fetchCertificates();
+      }, 300);
+    }
+
+    async function fetchCertificates() {
+      try {
+        state.searchQuery = document.getElementById('search-input').value;
+        state.selectedCategory = document.getElementById('filter-category').value;
+        state.sortBy = document.getElementById('sort-by').value;
+        state.sortOrder = document.getElementById('sort-order').value;
+
+        let url = `${API_BASE_URL}/certificates?page=${state.pagination.page}&limit=${state.pagination.limit}&search=${encodeURIComponent(state.searchQuery)}&category=${encodeURIComponent(state.selectedCategory)}&sortBy=${state.sortBy}&sortOrder=${state.sortOrder}`;
+
+        const response = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${state.token}` }
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          state.certificates = result.data.certificates;
+          state.pagination = result.data.pagination;
+          
+          // Populate Categories list dynamically (only once or update from stats)
+          populateCategoriesDropdown();
+          
+          // Render Table UI
+          renderTableUI();
+        }
+      } catch (err) {
+        showToast('Error loading certificate registry', 'error');
+      }
+    }
+
+    async function populateCategoriesDropdown() {
+      try {
+        // Fetch all certificates to extract unique categories
+        const response = await fetch(`${API_BASE_URL}/certificates`, {
+          headers: { 'Authorization': `Bearer ${state.token}` }
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+          const certs = result.data.certificates || [];
+          const categories = [...new Set(certs.map(c => c.category))].filter(Boolean);
+          
+          const dropdown = document.getElementById('filter-category');
+          const currentValue = dropdown.value;
+          
+          dropdown.innerHTML = '<option value="">All Categories</option>' + 
+            categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+            
+          dropdown.value = currentValue;
+        }
+      } catch (e) {
+        console.error("Failed to update categories dropdown list", e);
+      }
+    }
+
+    function renderTableUI() {
+      const tableBody = document.getElementById('certificates-table-body');
+      const emptyState = document.getElementById('table-empty-state');
+      
+      if (state.certificates.length === 0) {
+        tableBody.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        
+        document.getElementById('pagination-status').innerText = 'Showing 0 of 0 certificates';
+        document.getElementById('pagination-pages').innerText = 'Page 1 of 1';
+        document.getElementById('btn-prev-page').disabled = true;
+        document.getElementById('btn-next-page').disabled = true;
+        return;
+      }
+      
+      emptyState.classList.add('hidden');
+      
+      tableBody.innerHTML = state.certificates.map(cert => `
+        <tr class="hover:bg-slate-900/35 transition-colors border-b border-slate-800/80">
+          <td class="p-4 pl-6 font-medium text-slate-100 flex items-center space-x-3 cursor-pointer" onclick="openDetailsModal('${cert.id}')">
+            <span class="p-1.5 bg-violet-600/10 text-violet-400 border border-violet-500/20 rounded">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </span>
+            <span class="hover:text-brand-400 transition-colors truncate max-w-xs">${cert.name}</span>
+          </td>
+          <td class="p-4 text-slate-300 font-medium">${cert.organization}</td>
+          <td class="p-4">
+            <span class="px-2.5 py-1 text-[10px] font-semibold bg-violet-500/10 border border-violet-500/20 text-violet-400 rounded-lg uppercase tracking-wide">
+              ${cert.category}
+            </span>
+          </td>
+          <td class="p-4 text-slate-400 text-xs">${formatDateString(cert.issueDate)}</td>
+          <td class="p-4 text-slate-400 text-xs">${cert.expiryDate ? formatDateString(cert.expiryDate) : '<span class="text-slate-600 font-light">Does not expire</span>'}</td>
+          <td class="p-4 text-right pr-6 space-x-2">
+            <button onclick="openDetailsModal('${cert.id}')" class="text-slate-400 hover:text-white px-2 py-1 bg-slate-800 rounded border border-slate-700 transition-colors text-xs">View</button>
+            <a href="${STATIC_BASE_URL}${cert.fileUrl}" download="${cert.originalName}" target="_blank" class="inline-block text-violet-400 hover:text-white px-2 py-1 bg-violet-600/15 border border-violet-500/30 rounded transition-colors text-xs">Download</a>
+            <button onclick="deleteCertificateConfirm('${cert.id}')" class="text-rose-400 hover:text-white px-2 py-1 bg-rose-500/10 hover:bg-rose-500 border border-rose-500/20 rounded transition-colors text-xs">Delete</button>
+          </td>
+        </tr>
+      `).join('');
+
+      // Update pagination info
+      const start = (state.pagination.page - 1) * state.pagination.limit + 1;
+      const end = Math.min(start + state.certificates.length - 1, state.pagination.total);
+      
+      document.getElementById('pagination-status').innerText = `Showing ${start}-${end} of ${state.pagination.total} certificates`;
+      document.getElementById('pagination-pages').innerText = `Page ${state.pagination.page} of ${state.pagination.totalPages}`;
+      
+      document.getElementById('btn-prev-page').disabled = state.pagination.page <= 1;
+      document.getElementById('btn-next-page').disabled = state.pagination.page >= state.pagination.totalPages;
+    }
+
+    function changePage(direction) {
+      const targetPage = state.pagination.page + direction;
+      if (targetPage >= 1 && targetPage <= state.pagination.totalPages) {
+        state.pagination.page = targetPage;
+        fetchCertificates();
+      }
+    }
+
+    // ==================== DETAILS MODAL FLOW ====================
+    async function openDetailsModal(id) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/certificates/${id}`, {
+          headers: { 'Authorization': `Bearer ${state.token}` }
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          const cert = result.data.certificate;
+          
+          document.getElementById('modal-name').innerText = cert.name;
+          document.getElementById('modal-organization').innerText = cert.organization;
+          document.getElementById('modal-category').innerText = cert.category;
+          document.getElementById('modal-issue-date').innerText = formatDateString(cert.issueDate);
+          document.getElementById('modal-expiry-date').innerText = cert.expiryDate ? formatDateString(cert.expiryDate) : 'No Expiry';
+          document.getElementById('modal-description').innerText = cert.description || 'No description provided for this certificate.';
+          document.getElementById('modal-filename').innerText = cert.originalName;
+          document.getElementById('modal-filesize').innerText = formatBytes(cert.fileSize);
+          
+          // Button links
+          const viewBtn = document.getElementById('modal-btn-view');
+          const downloadBtn = document.getElementById('modal-btn-download');
+          
+          viewBtn.href = `${STATIC_BASE_URL}${cert.fileUrl}`;
+          downloadBtn.href = `${STATIC_BASE_URL}${cert.fileUrl}`;
+          downloadBtn.setAttribute('download', cert.originalName);
+          
+          // Delete button action handler setup
+          const deleteBtn = document.getElementById('modal-btn-delete');
+          deleteBtn.onclick = () => {
+            closeDetailsModal();
+            deleteCertificateConfirm(cert.id);
+          };
+
+          // Render details icons
+          const previewIcon = document.getElementById('modal-preview-icon');
+          if (cert.fileType.includes('image')) {
+            previewIcon.innerHTML = `<img src="${STATIC_BASE_URL}${cert.fileUrl}" class="h-full w-full object-cover rounded-xl" alt="Certificate Preview">`;
+          } else {
+            previewIcon.innerHTML = `
+              <svg class="h-8 w-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            `;
+          }
+
+          document.getElementById('details-modal').classList.remove('hidden');
+        }
+      } catch (err) {
+        showToast('Error launching certificate details view', 'error');
+      }
+    }
+
+    function closeDetailsModal() {
+      document.getElementById('details-modal').classList.add('hidden');
+    }
+
+    async function deleteCertificateConfirm(id) {
+      if (confirm('Are you sure you want to delete this certificate metadata and local storage permanently?')) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/certificates/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${state.token}` }
+          });
+          const result = await response.json();
+
+          if (result.success) {
+            showToast('Certificate successfully deleted', 'success');
+            logActivity('Certificate deleted', `ID: ${id}`);
+            
+            // Reload views
+            if (state.currentView === 'dashboard') {
+              fetchDashboardStats();
+            } else {
+              fetchCertificates();
+            }
+          } else {
+            showToast(result.message || 'Delete operation failed', 'error');
+          }
+        } catch (err) {
+          showToast('Error sending delete request to server', 'error');
+        }
+      }
+    }
+
+    // ==================== FILE DRAG & DROP LOGIC ====================
+    function triggerFileInput() {
+      document.getElementById('upload-file').click();
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      document.getElementById('drag-drop-zone').classList.add('border-brand-500', 'bg-violet-950/10');
+    }
+
+    function handleDragLeave(e) {
+      e.preventDefault();
+      document.getElementById('drag-drop-zone').classList.remove('border-brand-500', 'bg-violet-950/10');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      document.getElementById('drag-drop-zone').classList.remove('border-brand-500', 'bg-violet-950/10');
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        validateAndSetFile(files[0]);
+      }
+    }
+
+    function handleFileSelect(e) {
+      const files = e.target.files;
+      if (files.length > 0) {
+        validateAndSetFile(files[0]);
+      }
+    }
+
+    function validateAndSetFile(file) {
+      const allowedMimes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+      const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+
+      if (!allowedMimes.includes(file.type)) {
+        showToast('Invalid file format. Please upload PDF or image formats.', 'error');
+        return;
+      }
+
+      if (file.size > maxSizeBytes) {
+        showToast('File is too large. Size limit is 5MB.', 'error');
+        return;
+      }
+
+      state.selectedFile = file;
+
+      // Update UI preview box
+      document.getElementById('upload-prompt').classList.add('hidden');
+      
+      const preview = document.getElementById('upload-preview');
+      preview.classList.remove('hidden');
+      
+      document.getElementById('preview-filename').innerText = file.name;
+      document.getElementById('preview-filesize').innerText = formatBytes(file.size);
+      
+      const icon = document.getElementById('preview-icon');
+      if (file.type.includes('pdf')) {
+        icon.innerText = 'PDF';
+        icon.className = "h-10 w-10 bg-red-500/20 border border-red-500/40 rounded flex items-center justify-center text-red-400 text-xs font-bold";
+      } else {
+        icon.innerText = 'IMG';
+        icon.className = "h-10 w-10 bg-emerald-500/20 border border-emerald-500/40 rounded flex items-center justify-center text-emerald-400 text-xs font-bold";
+      }
+    }
+
+    function clearSelectedFile(e) {
+      e.stopPropagation();
+      state.selectedFile = null;
+      document.getElementById('upload-file').value = '';
+      
+      document.getElementById('upload-preview').classList.add('hidden');
+      document.getElementById('upload-prompt').classList.remove('hidden');
+    }
+
+    // ==================== CERTIFICATE UPLOAD API ====================
+    async function handleUpload(e) {
+      e.preventDefault();
+
+      if (!state.selectedFile) {
+        showToast('Please select a certificate file to upload.', 'error');
+        return;
+      }
+
+      const spinner = document.getElementById('upload-loading-spinner');
+      spinner.classList.remove('hidden');
+
+      const formData = new FormData();
+      formData.append('file', state.selectedFile);
+      formData.append('name', document.getElementById('cert-name').value);
+      formData.append('organization', document.getElementById('cert-org').value);
+      formData.append('category', document.getElementById('cert-category').value);
+      formData.append('issueDate', document.getElementById('cert-issue').value);
+      formData.append('expiryDate', document.getElementById('cert-expiry').value);
+      formData.append('description', document.getElementById('cert-desc').value);
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/certificates`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${state.token}` },
+          body: formData
+        });
+        const result = await response.json();
+
+        spinner.classList.add('hidden');
+
+        if (result.success) {
+          showToast('Certificate uploaded successfully!', 'success');
+          logActivity('Certificate uploaded', result.data.certificate.name);
+          
+          // Clear inputs
+          document.getElementById('upload-form').reset();
+          clearSelectedFile(e);
+          
+          switchView('dashboard');
+        } else {
+          showToast(result.message || 'Upload operation failed.', 'error');
+        }
+      } catch (err) {
+        spinner.classList.add('hidden');
+        showToast('Server connection failed.', 'error');
+      }
+    }
+
+    // ==================== UTILITY FUNCTIONS ====================
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let colors = 'bg-violet-950 border-violet-800 text-violet-200';
+      if (type === 'error') colors = 'bg-rose-950 border-rose-800 text-rose-200';
+      if (type === 'info') colors = 'bg-slate-900 border-slate-700 text-slate-200';
+
+      toast.className = `flex items-center p-4 rounded-xl border shadow-xl ${colors} min-w-[280px] max-w-[400px] animate-bounce-short transition-all`;
+      toast.innerHTML = `
+        <span class="text-sm font-medium mr-3">${message}</span>
+        <button onclick="this.parentElement.remove()" class="ml-auto text-slate-400 hover:text-white">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.remove();
+      }, 4000);
+    }
+
+    function formatBytes(bytes, decimals = 2) {
+      if (!bytes) return '0 Bytes';
+      const k = 1024;
+      const dm = decimals < 0 ? 0 : decimals;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+
+    function formatDateString(isoString) {
+      if (!isoString) return '';
+      const date = new Date(isoString);
+      return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+  </script>
+</body>
+</html>
