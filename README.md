@@ -267,7 +267,7 @@ JWT_SECRET=your_secret_key
 ![Launch Template](screenshots/LaunchTemplate.png)
 
 #### Application Load Balancer
-![Load Balancers](screenshots/Load-balancers.png)
+![Load Balancers](screenshots/load-balancer.png)
 
 #### Auto Scaling Group Configuration
 ![Auto Scaling](screenshots/auto-scaling.png)
